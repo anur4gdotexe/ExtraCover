@@ -6,7 +6,7 @@ $stmt->bind_param('sss', $username, $name, $hash_password);
 
 $username = '';
 $name = '';
-$password = str_replace('a', '@', $username);
+$password = '';
 
 $hash_password = password_hash($password, PASSWORD_DEFAULT);
 
