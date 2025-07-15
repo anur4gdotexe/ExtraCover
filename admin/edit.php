@@ -21,23 +21,42 @@ if (isset($_SESSION['username'])){
         else {
             $title = $post['title'];
             $content = $post['content'];
+            
+            $stmt = $conn->prepare('SELECT tag_id FROM post_tags WHERE post_id = ?');
+            $stmt->bind_param('i', $id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $tags = [];
+            while ($row = $result->fetch_assoc()) {
+                $tags[] = $row['tag_id'];
+            }
 
             //update post
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 if ($_POST['title'] && $_POST['content']) {
-                    if ($_POST['title'] == $title && $_POST['content'] == $content) $msg = 'No changes made';
-                    else {
-                        $updTitle = htmlspecialchars($_POST['title']);
-                        $updContent = htmlspecialchars($_POST['content']);
-
-                        $stmt = $conn->prepare('UPDATE posts SET title = ?, content = ? WHERE id = ? AND author_id = ?');
-                        $stmt->bind_param('ssii', $updTitle, $updContent, $id, $userId);
+                    $updTitle = htmlspecialchars($_POST['title']);
+                    $updContent = htmlspecialchars($_POST['content']);
+                    $stmt = $conn->prepare('UPDATE posts SET title = ?, content = ? WHERE id = ? AND author_id = ?');
+                    $stmt->bind_param('ssii', $updTitle, $updContent, $id, $userId);
                         
-                        if ($stmt->execute()) $msg = 'Post updated successfully';
-                        else $msg = 'Something went wrong';
-                    }
+                    if ($stmt->execute()) {
+                        $conn->query("DELETE FROM post_tags WHERE post_id = $id");
+
+                        if (!empty($_POST['tags'])) {
+                            $stmt = $conn->prepare('INSERT INTO post_tags VALUES (?,?)');
+                            foreach ($_POST['tags'] as $tagId) {
+                                $tagId = (int)$tagId;
+                                    
+                                $stmt->bind_param('ii', $id, $tagId);
+                                $stmt->execute();
+                            }
+                        }
+                        $msg = 'Post updated successfully';
+                    } 
+                    else $msg = 'Something went wrong';
                 }
-                else $msg = 'Post can\'t be empty';
+                
             }
         }  
     }
@@ -56,6 +75,11 @@ if (isset($_SESSION['username'])){
         <form method="POST">
             <input type="text" name="title" placeholder="Title" value="<?= $title ?>" required><br><br>
             <textarea name="content" rows="10" cols="50" required><?= $content ?></textarea><br><br>
+            <label><input type="checkbox" name="tags[]" value="1" <?php if (in_array(1, $tags)) echo "checked"; ?>> Cricket</label>
+            <label><input type="checkbox" name="tags[]" value="2" <?php if (in_array(2, $tags)) echo "checked"; ?>>Football</label>
+            <label><input type="checkbox" name="tags[]" value="3" <?php if (in_array(3, $tags)) echo "checked"; ?>>Tennis</label>
+            <label><input type="checkbox" name="tags[]" value="4" <?php if (in_array(4, $tags)) echo "checked"; ?>>F1</label>
+            <label><input type="checkbox" name="tags[]" value="5" <?php if (in_array(5, $tags)) echo "checked"; ?>>Others</label>
             
             <button type="submit">UPDATE</button> | <a href="dashboard.php">CANCEL</a>
         </form>
