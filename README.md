@@ -4,6 +4,13 @@
 
 <br>
 
+## Preview
+<img src="images/indexPage.png" width="70%" alt="Home page">
+<img src="images/postPage.png" width="70%" alt="Post page">
+<img src="images/createPage.png" width="70%" alt="Create page">
+
+<br>
+
 ## Project Status
 This is a **work-in-progress** version of ExtraCover.  
 So far, it includes:
@@ -11,8 +18,9 @@ So far, it includes:
 - Post creation, editing, and deletion
 - Admin dashboard to manage articles
 - Basic session and permission handling
+- Designs for a few pages
 
-The frontend and article browsing for users is under development.
+The frontend is under development.
 
 <br>
 
